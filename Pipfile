@@ -4,6 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+wmi = "*"
+psutil = "*"
+py-cpuinfo = "*"
+matplotlib = "*"
+pywin32 = "*"
 
 [dev-packages]
 

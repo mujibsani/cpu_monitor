@@ -10,7 +10,7 @@ class LiveChart:
         self.max_points = 60
         self.cpu_data = [0] * self.max_points
 
-        # Style for progress bars accent color
+        # Style
         style = ttk.Style()
         style.theme_use('clam')
         style.configure("green.Horizontal.TProgressbar", foreground='#4caf50', background='#4caf50', thickness=20)
@@ -33,56 +33,38 @@ class LiveChart:
         self.usage_label = ttk.Label(root, text="Total CPU Usage: 0.0 %", font=("Segoe UI", 12, "bold"), foreground='#2196f3')
         self.usage_label.pack(pady=5)
 
-        # Scrollable frame for cores and threads
         self.core_frame = ttk.Frame(root)
         self.core_frame.pack(fill='both', expand=True, padx=15, pady=15)
-
-        self.canvas_scroll = tk.Canvas(self.core_frame, height=370, bg="#f0f0f0", highlightthickness=0)
-        self.scrollbar = ttk.Scrollbar(self.core_frame, orient="vertical", command=self.canvas_scroll.yview)
-        self.scrollable_frame = ttk.Frame(self.canvas_scroll)
-
-        self.scrollable_frame.bind("<Configure>",
-            lambda e: self.canvas_scroll.configure(scrollregion=self.canvas_scroll.bbox("all")))
-
-        self.canvas_scroll.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
-        self.canvas_scroll.configure(yscrollcommand=self.scrollbar.set)
-
-        self.canvas_scroll.pack(side="left", fill="both", expand=True)
-        self.scrollbar.pack(side="right", fill="y")
-
-        self.physical = psutil.cpu_count(logical=False)
-        self.logical = psutil.cpu_count(logical=True)
-        self.threads_per_core = self.logical // self.physical if self.physical else 1
 
         self.core_avg_bars = []
         self.core_avg_labels = []
         self.thread_bars = []
         self.thread_labels = []
 
-        core_colors = ['#bbdefb', '#c8e6c9']  # alternating light blue and light green
+        self.physical = psutil.cpu_count(logical=False)
+        self.logical = psutil.cpu_count(logical=True)
+        self.threads_per_core = self.logical // self.physical if self.physical else 1
+
+        core_colors = ['#bbdefb', '#c8e6c9']
 
         for core_idx in range(self.physical):
             bg_color = core_colors[core_idx % len(core_colors)]
-            frame_core = tk.Frame(self.scrollable_frame, bg=bg_color, bd=2, relief='groove')
+            frame_core = tk.Frame(self.core_frame, bg=bg_color, bd=2, relief='groove')
             frame_core.pack(fill='x', pady=6, padx=8)
 
-            label_core = tk.Label(frame_core, text=f"🖥️ Core {core_idx + 1}", bg=bg_color,
-                                  font=("Segoe UI", 14, "bold"))
+            label_core = tk.Label(frame_core, text=f"🖥️ Core {core_idx + 1}", bg=bg_color, font=("Segoe UI", 14, "bold"))
             label_core.pack(anchor='w', padx=8, pady=4)
 
             avg_frame = tk.Frame(frame_core, bg=bg_color)
             avg_frame.pack(fill='x', pady=6, padx=10)
 
-            label_avg = tk.Label(avg_frame, text="Core Avg:", bg=bg_color,
-                                 font=("Segoe UI", 12, "bold"), width=12, anchor='w')
+            label_avg = tk.Label(avg_frame, text="Core Avg:", bg=bg_color, font=("Segoe UI", 12, "bold"), width=12, anchor='w')
             label_avg.pack(side='left')
 
-            pbar_avg = ttk.Progressbar(avg_frame, length=280, maximum=100, mode='determinate',
-                                      style="CoreAvg.Horizontal.TProgressbar")
+            pbar_avg = ttk.Progressbar(avg_frame, length=280, maximum=100, mode='determinate', style="CoreAvg.Horizontal.TProgressbar")
             pbar_avg.pack(side='left', padx=12)
 
-            lbl_avg_val = tk.Label(avg_frame, text="0.0%", bg=bg_color,
-                                   font=("Segoe UI", 12), width=6)
+            lbl_avg_val = tk.Label(avg_frame, text="0.0%", bg=bg_color, font=("Segoe UI", 12), width=6)
             lbl_avg_val.pack(side='left')
 
             self.core_avg_bars.append(pbar_avg)
@@ -94,16 +76,13 @@ class LiveChart:
                 thread_frame = tk.Frame(frame_core, bg=bg_color)
                 thread_frame.pack(fill='x', pady=2, padx=24)
 
-                lbl_thread = tk.Label(thread_frame, text=f"🧵 Thread {thread_idx + 1}:", bg=bg_color,
-                                      font=("Segoe UI", 11), width=12, anchor='w')
+                lbl_thread = tk.Label(thread_frame, text=f"🧵 Thread {thread_idx + 1}:", bg=bg_color, font=("Segoe UI", 11), width=12, anchor='w')
                 lbl_thread.pack(side='left')
 
-                pbar_thread = ttk.Progressbar(thread_frame, length=240, maximum=100, mode='determinate',
-                                             style="green.Horizontal.TProgressbar")
+                pbar_thread = ttk.Progressbar(thread_frame, length=240, maximum=100, mode='determinate', style="green.Horizontal.TProgressbar")
                 pbar_thread.pack(side='left', padx=10)
 
-                lbl_thread_val = tk.Label(thread_frame, text="0.0%", bg=bg_color,
-                                         font=("Segoe UI", 11), width=6)
+                lbl_thread_val = tk.Label(thread_frame, text="0.0%", bg=bg_color, font=("Segoe UI", 11), width=6)
                 lbl_thread_val.pack(side='left')
 
                 thread_bar_list.append(pbar_thread)
@@ -113,7 +92,6 @@ class LiveChart:
             self.thread_labels.append(thread_label_list)
 
         psutil.cpu_percent(interval=None)  # initialize stats
-
         self.after_id = None
         self.update_chart()
 
